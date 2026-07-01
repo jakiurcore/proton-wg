@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: protonwg
+Version: 1.0.0
+Summary: WireGuard TUI manager for Arch Linux (Proton VPN)
+Requires-Python: >=3.9
+Requires-Dist: textual>=0.47
