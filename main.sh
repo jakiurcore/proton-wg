@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 # ProtonWG launcher — runs the Python TUI
-exec python3 "$(cd "$(dirname "$0")" && pwd)/protonwg.py" "$@"
+cd "$(dirname "$0")" || exit 1
+exec uv run protonwg.py "$@"

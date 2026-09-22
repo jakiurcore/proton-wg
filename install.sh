@@ -50,19 +50,17 @@ fi
 PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 ok "Python $PYVER"
 
-# --- 5. textual ---------------------------------------------------------------
-info "Installing textual (TUI framework)…"
-if python3 -c "import textual" 2>/dev/null; then
-    ok "textual already installed"
-else
-    pip install --user --quiet --break-system-packages textual
-    ok "textual"
+# --- 5. uv ----------------------------------------------------------------
+info "Checking uv…"
+if ! command -v uv >/dev/null 2>&1; then
+    sudo pacman -S --needed --noconfirm uv
 fi
+ok "uv $(uv --version | awk '{print $2}')"
 
 # --- 6. install package (editable) -------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-info "Installing protonwg package…"
-pip install --user -e "$SCRIPT_DIR" --quiet --break-system-packages
+info "Installing protonwg package (and textual dependency)…"
+uv tool install --editable "$SCRIPT_DIR" --force --quiet
 ok "protonwg installed (~/.local/bin/protonwg)"
 
 # --- 7. PATH check ------------------------------------------------------------

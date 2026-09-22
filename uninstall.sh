@@ -13,7 +13,7 @@ printf "${BOLD}ProtonWG Uninstaller${RESET}\n"
 echo "──────────────────────────────────────"
 
 info "Removing protonwg package…"
-pip uninstall --break-system-packages -y protonwg 2>/dev/null && ok "protonwg removed" || warn "protonwg not installed via pip"
+uv tool uninstall protonwg 2>/dev/null && ok "protonwg removed" || warn "protonwg not installed via uv"
 
 # Clean up any legacy symlink from old install
 if [[ -L /usr/local/bin/protonwg ]]; then

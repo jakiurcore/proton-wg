@@ -29,6 +29,7 @@ A terminal UI for managing ProtonVPN WireGuard connections on Arch Linux.
 
 - Arch Linux (uses `pacman`)
 - Python 3.9+
+- [`uv`](https://github.com/astral-sh/uv) (Python package/tool manager)
 - `wireguard-tools`
 - `openresolv` or `systemd-resolvconf` + `systemd-resolved`
 - `iptables` (for kill switch)
@@ -49,9 +50,8 @@ bash install.sh
 2. DNS resolver — detects which is installed:
    - `systemd-resolvconf` present + `systemd-resolved` inactive → enables `systemd-resolved`
    - Neither present → installs `openresolv`
-3. `pacman -S curl python`
-4. `pip install --user textual`
-5. `pip install --user -e .` — installs `protonwg` as a package, creates `~/.local/bin/protonwg`
+3. `pacman -S curl python uv`
+4. `uv tool install --editable .` — installs `protonwg` (and its `textual` dependency) as an isolated tool, creates `~/.local/bin/protonwg`
 
 After install, run from anywhere:
 ```bash
@@ -61,7 +61,7 @@ protonwg
 Or from the project directory directly:
 ```bash
 ./main.sh
-python3 protonwg.py
+uv run protonwg.py
 ```
 
 > **PATH note:** `~/.local/bin` must be in `$PATH`. If `install.sh` warns about this, add the line it prints to your `~/.bashrc` or `~/.zshrc`, then restart your shell.
@@ -170,8 +170,8 @@ sudo pacman -S openresolv
 protonwg/
 ├── main.sh              # Launcher (runs protonwg.py from project dir)
 ├── protonwg.py          # Entry point — dependency check, sudo auth, start TUI
-├── install.sh           # Installer (pip install -e . → protonwg command)
-├── uninstall.sh         # Uninstaller (pip uninstall protonwg)
+├── install.sh           # Installer (uv tool install -e . → protonwg command)
+├── uninstall.sh         # Uninstaller (uv tool uninstall protonwg)
 ├── pyproject.toml       # Python package metadata + entry point definition
 │
 ├── wg/
@@ -197,9 +197,9 @@ protonwg/
 
 ### Entry point
 
-`pip install -e .` registers `protonwg = "protonwg:main"` in `pyproject.toml`. pip creates `~/.local/bin/protonwg` — a wrapper script that puts the project directory on `sys.path` and calls `protonwg.main()`. This is why the command works from any directory without symlink or PATH hacks.
+`uv tool install --editable .` registers `protonwg = "protonwg:main"` (from `pyproject.toml`) in an isolated tool environment and creates `~/.local/bin/protonwg` — a wrapper script that calls `protonwg.main()` against an editable link back to this source directory (so local changes are picked up without reinstalling). This is why the command works from any directory without symlink or PATH hacks.
 
-Running directly (`python3 protonwg.py` or `./main.sh`) also works — the `__main__` block uses `os.path.realpath(__file__)` to resolve symlinks and inserts the correct directory into `sys.path`.
+Running directly (`uv run protonwg.py` or `./main.sh`) also works — `uv run` syncs the dependencies declared in `pyproject.toml` into a project-local `.venv` on first run, and the `__main__` block uses `os.path.realpath(__file__)` to resolve symlinks and inserts the correct directory into `sys.path`.
 
 ### sudo authentication
 
@@ -251,7 +251,7 @@ bash install.sh   # installs deps + registers protonwg command
 
 For UI-only development without WireGuard:
 ```bash
-pip install --user textual --break-system-packages
+uv sync   # installs textual into a project-local .venv
 ```
 
 ### Project dependencies
@@ -279,7 +279,7 @@ Add a function to `wg/manager.py`. All functions return `tuple[bool, str]` (succ
 
 ```bash
 # Skip dependency check and sudo auth:
-python3 -c "
+uv run python3 -c "
 import sys, os
 sys.path.insert(0, '.')
 from tui.app import ProtonWGApp
@@ -292,7 +292,7 @@ The TUI renders with an empty tunnel list. Mock `wg/manager.py` functions to tes
 ### Syntax check
 
 ```bash
-python3 -m py_compile protonwg.py wg/*.py tui/app.py tui/screens/*.py tui/widgets/*.py
+uv run python3 -m py_compile protonwg.py wg/*.py tui/app.py tui/screens/*.py tui/widgets/*.py
 bash -n install.sh main.sh
 ```
 

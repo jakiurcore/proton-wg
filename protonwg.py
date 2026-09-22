@@ -17,7 +17,7 @@ def _check_deps() -> None:
     try:
         import textual  # noqa: F401
     except ImportError:
-        errors.append("textual not installed — run: pip install --user textual")
+        errors.append("textual not installed — run: uv sync (dev) or bash install.sh")
 
     if not shutil.which("wg-quick"):
         errors.append("wg-quick not found — run: sudo pacman -S wireguard-tools")

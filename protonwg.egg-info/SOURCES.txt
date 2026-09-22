@@ -1,4 +1,5 @@
 README.md
+protonwg.py
 pyproject.toml
 protonwg.egg-info/PKG-INFO
 protonwg.egg-info/SOURCES.txt
